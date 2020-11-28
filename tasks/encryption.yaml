@@ -18,7 +18,13 @@
     - config.client.encrypt.pass is not defined
 
 - name: Generate encryption key with password
-  shell: expect -c "spawn proxmox-backup-client key create {{ config.client.encrypt.key }}; expect \"*?assword:*\"; send -- \"{{ config.client.encrypt.pass }}\r\"; expect \"*?assword:*\"; send -- \"{{ config.client.encrypt.pass }}\r\"; expect eof"
+  command: >
+    expect -c "spawn proxmox-backup-client key create {{ config.client.encrypt.key }}; 
+    expect \"*?assword:*\"; 
+    send -- \"{{ config.client.encrypt.pass }}\r\"; 
+    expect \"*?assword:*\"; 
+    send -- \"{{ config.client.encrypt.pass }}\r\"; 
+    expect eof"
   when: 
     - not encryption_key.stat.exists
     - config.client.encrypt.pass is defined

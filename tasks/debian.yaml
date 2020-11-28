@@ -3,3 +3,8 @@
   apt:
     name: proxmox-backup-client
     state: present
+
+- name: Install the Expect shell
+  apt:
+    name: expect
+    state: present
