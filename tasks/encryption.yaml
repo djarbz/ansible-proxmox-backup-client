@@ -12,7 +12,7 @@
   register: encryption_key
 
 - name: Generate encryption key without password
-  shell: proxmox-backup-client key create {{ config.client.encrypt.key }} --kdf none
+  command: proxmox-backup-client key create {{ config.client.encrypt.key }} --kdf none
   when: 
     - not encryption_key.stat.exists
     - config.client.encrypt.pass is not defined
