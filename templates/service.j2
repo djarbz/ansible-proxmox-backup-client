@@ -1,0 +1,34 @@
+# /etc/systemd/system/proxmox-backup-client.service
+[Unit]
+Description=Proxmox Backup Client
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+
+Environment=PBS_REPOSITORY={{ config.server.user }}@{{ config.server.host }}{% if config.server.port is defined %}:{{ config.server.port }}{% endif %}:{{ config.server.datastore }}
+Environment=PBS_PASSWORD={{ config.server.pass }}
+{% if config.server.fingerprint is defined %}Environment=PBS_FINGERPRINT={{ config.server.fingerprint }}{% endif %}
+
+{% if config.client.encrypt.pass is defined %}Environment=PBS_ENCRYPTION_PASSWORD={{ config.client.encrypt.pass }}{% endif %}
+{% if config.client.output.format is defined %}Environment=PBS_OUTPUT_FORMAT={{ config.client.output.format }}{% endif %}
+{% if config.client.output.border is defined %}Environment=PBS_OUTPUT_NO_BORDER={{ config.client.output.border }}{% endif %}
+{% if config.client.output.header is defined %}Environment=PBS_OUTPUT_NO_HEADER={{ config.client.output.header }}{% endif %}
+
+
+ExecStart=proxmox-backup-client backup \
+{% if config.server.encrypt.key is defined %}
+                --keyfile {{ config.client.encrypt.key }} \
+{% endif %}
+{% if config.client.skip_lost_found is defined %}
+                --skip-lost-and-found true \
+{% endif %}
+{% if config.client.include_devices is defined %}
+{% for dev in config.client.include_devices %}
+                --include-dev {{ dev }} \
+{% endfor %}
+{% endif %}
+{% for archive in config.client.archives %}
+                {{ archive.name }}{{ archive.format }}:{{ archive.path }}{{ " \\" if not loop.last else '' }}
+{% endfor %}

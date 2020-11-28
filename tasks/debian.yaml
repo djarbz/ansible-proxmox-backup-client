@@ -1,0 +1,5 @@
+---
+- name: Install the Proxmox Backup Client
+  apt:
+    name: proxmox-backup-client
+    state: present

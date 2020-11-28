@@ -1,0 +1,54 @@
+---
+- name: "Check required proxmox_backup.server dictionary keys"
+  fail: msg="proxmox_backup.server.{{ required_key }} must be defined"
+  when: required_key not in proxmox_backup.server
+  with_items: "{{ required_pbs_server_keys }}"
+  loop_control:
+    loop_var: required_key
+    
+- name: "Check required proxmox_backup.client dictionary keys"
+  fail: msg="proxmox_backup.client.{{ required_key }} must be defined"
+  when: required_key not in proxmox_backup.client
+  with_items: "{{ required_pbs_client_keys }}"
+  loop_control:
+    loop_var: required_key
+    
+- name: "Check required proxmox_backup.archive dictionary keys"
+  include_tasks: check_archive_keys.yaml
+  with_items: "{{ proxmox_backup.client.archives }}"
+  loop_control:
+    loop_var: archive
+    
+- name: "Check required proxmox_backup.exclude dictionary keys"
+  include_tasks: check_exclude_keys.yaml
+  with_items: "{{ proxmox_backup.client.exclude }}"
+  loop_control:
+    loop_var: exclude
+  when: proxmox_backup.client.exclude is defined
+
+- name: Merge supplied and default dictionaries
+  set_fact:
+    config: "{{ default_config | combine(proxmox_backup, recursive=true) }}"
+
+- name: Include OS Family tasks
+  include_tasks: "{{ ansible_os_family | lower }}.yaml"
+
+- name: Configure encryption
+  include_tasks: encryption.yaml
+  when: 
+    - config.client.encrypt is defined
+    - config.client.encrypt.enable
+
+- name: Add Exclusions
+  include_tasks: exclude.yaml
+  loop: "{{ config.client.exclude }}"
+  loop_control:
+    loop_var: exclude
+  when: config.client.exclude is defined
+
+- name: Debug Config
+  debug:
+    var: config.client
+
+- name: Configure service
+  include_tasks: service.yaml

@@ -1,0 +1,9 @@
+[Unit]
+Description=Proxmox Backup Runner
+
+[Timer]
+OnCalendar={{ config.client.schedule.calendar }}
+{% if config.client.schedule.runifmissed %}Persistent=true{% endif %}
+
+[Install]
+WantedBy=timers.target

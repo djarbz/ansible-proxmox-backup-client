@@ -1,0 +1,64 @@
+# required_vars:
+#   - proxmox_backup_user
+#   - proxmox_backup_pass
+
+# Keys required to be set in a proxmox_backup.server dictionary
+required_pbs_server_keys:
+  - user # Example, backup@pbs
+  - pass # This value is used for the password required for the backup server. You can also set this to a API token secret.
+  - host # Hostname or IP of the backup server
+  - datastore # Datastore to store the backups on
+
+# Optional keys on the proxmox_backup.server dictionary
+# - port # Set if not default of 8007
+# - fingerprint # When set, this value is used to verify the server certificate (only used if the system CA certificates cannot validate the certificate).
+
+# Keys required to be set in a proxmox_backup.client dictionary
+required_pbs_client_keys:
+  - archives # Array of Archive definition dictionaries, see below for format
+
+# Optional keys on the proxmox_backup.client dictionary
+# - encrypt.enable # Enable encryption
+# - encrypt.pass # When set, this value is used to access the secret encryption key (if protected by password).
+# - encrypt.key # Set this to the path of the (existing/new) encryption keyfile. Default: ~/.config/proxmox-backup/encryption-key.json
+# - encrypt.master # Path to local master-public.pem to copy to the client
+# - output.format # Possible values are text, json, json-pretty
+# - output.border # If set, will not render table borders
+# - output.header # If set, will not render table headers
+# - include_devices # Array of mount points to include, MPs are skipped by default
+# - skip_lost_found # skip lost+found directories, default no
+# - exclude # Array of dictionaries defining exclude files
+# - schedule.calendar # Systemd Timer OnCalendar string
+# - schedule.runifmissed # Trigger service if the last start time was missed
+
+# Keys required to be set in a proxmox_backup.client.archives[#] dictionary
+required_pbs_archive_keys:
+  - name # Name of the archive file uploaded to the backup server
+  - path # Path that you wish to backup
+  - format # Common types are .pxar for file archives, and .img for block device images.
+
+# Keys required to be set in a proxmox_backup.client.exclude[#] dictionary
+required_pbs_exclude_keys:
+  - path # File path of .pxarexclude (Parent Folder)
+  - enabled # Create the exclusion file, delete if no
+  - rules # Array of exclusion rules, can include an explicit inclusion
+
+default_config:
+  client:
+    encrypt:
+      enable: false
+      key: ~/.config/proxmox-backup/encryption-key.json
+    output:
+      format: text
+    skip_lost_found: no
+    # exclude:
+    #   - path: /.pxarexclude
+    #     rules:
+    #       - /tmp
+    schedule:
+      calendar: '*-*-* 4:00:00' # Daily at 4am
+      runifmissed: no
+    # archives:
+    #   - name: root
+    #     path: /
+    #     format: .pxar

@@ -1,0 +1,24 @@
+---
+- name: "Check required exclude variables"
+  fail: msg="Variable 'exclude.{{ required_var }}' must be defined"
+  when: required_var not in exclude
+  loop:
+    - path
+    - rules
+  loop_control:
+    loop_var: required_var
+
+- name: Delete\Disable {{ exclude.path }}/.pxarexclude
+  file:
+    path: "{{ exclude.path }}/.pxarexclude"
+    state: absent
+  when: 
+    - exclude.enabled is defined
+    - not exclude.enabled
+
+- name: Configure {{ exclude.path }} rules
+  blockinfile:
+    create: yes
+    path: "{{ exclude.path }}/.pxarexclude"
+    block: "{{ exclude.rules | join('\n') }}"
+  when: exclude.enabled is not defined or exclude.enabled

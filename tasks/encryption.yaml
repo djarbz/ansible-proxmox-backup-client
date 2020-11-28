@@ -1,0 +1,24 @@
+---
+- name: Install master encryption public key
+  copy:
+    src: "{{ config.client.encrypt.master }}"
+    dest: ~/.config/proxmox-backup/master-public.pem
+    mode: '0600'
+  when: config.client.encrypt.master is defined
+
+- name: Check if encryption key exists
+  stat:
+    path: "{{ config.client.encrypt.key }}"
+  register: encryption_key
+
+- name: Generate encryption key without password
+  shell: proxmox-backup-client key create {{ config.client.encrypt.key }} --kdf none
+  when: 
+    - not encryption_key.stat.exists
+    - config.client.encrypt.pass is not defined
+
+- name: Generate encryption key with password
+  shell: expect -c "spawn proxmox-backup-client key create {{ config.client.encrypt.key }}; expect \"*?assword:*\"; send -- \"{{ config.client.encrypt.pass }}\r\"; expect \"*?assword:*\"; send -- \"{{ config.client.encrypt.pass }}\r\"; expect eof"
+  when: 
+    - not encryption_key.stat.exists
+    - config.client.encrypt.pass is defined

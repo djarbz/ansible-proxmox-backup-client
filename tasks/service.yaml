@@ -1,0 +1,23 @@
+---
+- name: setup Proxmox Backup systemd
+  template:
+    src: "{{ item.template }}"
+    dest: "{{ item.service }}"
+    owner: root
+    group: root
+    mode: u=rw,g=rw,o=r
+    # Cannot validate due to systemd issue
+    # validate: systemd-analyze verify %s
+  loop:
+    - template: service.j2
+      service: /etc/systemd/system/proxmox-backup-client.service
+    - template: timer.j2
+      service: /etc/systemd/system/proxmox-backup-client.timer
+
+- name: enable and start Proxmox Backup timer
+  systemd:
+    name: "proxmox-backup-client.timer"
+    state: started
+    enabled: yes
+    daemon_reload: yes
+    no_block: yes
