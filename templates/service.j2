@@ -18,7 +18,7 @@ Environment=PBS_PASSWORD={{ config.server.pass }}
 
 
 ExecStart=proxmox-backup-client backup \
-{% if config.server.encrypt.key is defined %}
+{% if config.client.encrypt.key is defined %}
                 --keyfile {{ config.client.encrypt.key }} \
 {% endif %}
 {% if config.client.skip_lost_found is defined %}
